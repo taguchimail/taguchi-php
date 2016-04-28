@@ -49,6 +49,7 @@ class Subscriber extends Record {
       bounce_datetime: Date/time at which this subscriber's email address was
           marked as invalid (or NULL).
       xml_data: Arbitrary application XML data store.
+      import_id: The associated Import ID if the subscriber is new.
     */
     private static $fields = array(
         "record_id" => "id",
@@ -73,7 +74,8 @@ class Subscriber extends Record {
         "social_profile" => "social_profile",
         "unsubscribe_datetime" => "unsubscribed",
         "bounce_datetime" => "bounced",
-        "xml_data" => "data"
+        "xml_data" => "data",
+        "import_id" => "import_id"
     );
 
     public function __get($name) {
@@ -82,6 +84,9 @@ class Subscriber extends Record {
 
     public function __set($name, $value) {
         if (array_key_exists($name, self::$fields) && $name != "record_id") {
+            if ($name == "import_id") {
+                $value = intval($value);
+            }
             $this->backing[$name] = $value;
         }
     }
@@ -284,11 +289,18 @@ class Subscriber extends Record {
                 if (strval($this->backing["lists"][$i]["list_id"]) == $list) {
                     $this->backing["lists"][$i]["option"] = $option;
                     $this->backing["lists"][$i]["unsubscribed"] = NULL;
+                    if (array_key_exists("import_id", $this->backing)) {
+                        $this->backing["lists"][$i]["import_id"] =
+                            $this->backing["import_id"];
+                    }
                     return;
                 }
             }
             // List was not found in the array, so add it.
             $list = array("list_id" => intval($list), "option" => $option);
+            if (array_key_exists("import_id", $this->backing)) {
+                $list["import_id"] = $this->backing["import_id"];
+            }
             $this->backing["lists"][] = $list;
         }
     }
