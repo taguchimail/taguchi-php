@@ -87,7 +87,7 @@ class Subscriber extends Record {
             if ($name == "import_id") {
                 $value = intval($value);
             }
-            $this->backing[$name] = $value;
+            $this->backing[self::$fields[$name]] = $value;
         }
     }
 
